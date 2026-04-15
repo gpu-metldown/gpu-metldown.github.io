@@ -200,12 +200,25 @@
     }
     .gallery-dots { position: absolute; top: 12px; left: 16px; display: flex; gap: 6px; z-index: 2; }
     .gallery-dot { width: 10px; height: 10px; border-radius: 50%; opacity: 0.7; }
-    .gallery-placeholder {
-      padding: 2.5rem 1.5rem 1.5rem; display: flex; align-items: center; justify-content: center;
-      min-height: 300px; flex-direction: column; gap: 0.6rem;
-      color: rgba(240,236,228,0.25); font-size: 14px; letter-spacing: 0.1em;
+    .gallery-img {
+      width: 100%; display: block; max-height: 520px; object-fit: cover;
+      object-position: top; transition: opacity 0.3s;
     }
-    .gallery-placeholder-icon { font-size: 48px; opacity: 0.2; margin-bottom: 0.5rem; }
+    .gallery-img-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 2rem;
+    }
+    .gallery-img-grid-item { position: relative; overflow: hidden; cursor: pointer; }
+    .gallery-img-grid-item img {
+      width: 100%; height: 200px; object-fit: cover; object-position: top;
+      display: block; transition: transform 0.4s, opacity 0.3s; opacity: 0.7;
+    }
+    .gallery-img-grid-item:hover img { transform: scale(1.04); opacity: 1; }
+    .gallery-img-grid-item .grid-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(10,14,20,0.85));
+      color: #f0ece4; font-size: 13px; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 1.5rem 1rem 0.8rem;
+    }
     .gallery-note { color: rgba(240,236,228,0.25); font-size: 12px; text-align: center; margin-top: 1rem; font-style: italic; }
 
     /* ── ABOUT ── */
@@ -476,11 +489,13 @@
       <div class="section-tag">Interface Gallery</div>
       <h2 class="section-h2">Your Command Centre</h2>
     </div>
+
+    <!-- Main featured image viewer -->
     <div class="gallery-tabs">
-      <button class="gallery-tab active" onclick="setTab(this,'Scenes &amp; Mood')">Scenes &amp; Mood</button>
-      <button class="gallery-tab" onclick="setTab(this,'Energy Dashboard')">Energy Dashboard</button>
-      <button class="gallery-tab" onclick="setTab(this,'Security Overview')">Security Overview</button>
-      <button class="gallery-tab" onclick="setTab(this,'Shutter Control')">Shutter Control</button>
+      <button class="gallery-tab active" onclick="setTab(this,'dash-scenes.png','Scenes &amp; Mood')">Scenes &amp; Mood</button>
+      <button class="gallery-tab" onclick="setTab(this,'dash-energy.png','Energy Dashboard')">Energy Dashboard</button>
+      <button class="gallery-tab" onclick="setTab(this,'dash-security.png','Security Overview')">Security Overview</button>
+      <button class="gallery-tab" onclick="setTab(this,'dash-shutters.png','Shutter Control')">Shutter Control</button>
     </div>
     <div class="gallery-frame">
       <div class="gallery-dots">
@@ -488,13 +503,22 @@
         <div class="gallery-dot" style="background:#ffbd2e"></div>
         <div class="gallery-dot" style="background:#28ca41"></div>
       </div>
-      <div class="gallery-placeholder">
-        <div class="gallery-placeholder-icon">▦</div>
-        <span id="gallery-label">Scenes &amp; Mood Interface</span>
-        <span style="font-size:12px;opacity:0.4">Connect your system to see live data</span>
+      <img id="gallery-main-img" class="gallery-img" src="dash-scenes.png" alt="Scenes & Mood dashboard" style="padding-top:32px;" />
+    </div>
+
+    <!-- Automation logic screenshots grid -->
+    <div class="gallery-img-grid" style="margin-top:2rem">
+      <div class="gallery-img-grid-item">
+        <img src="auto-logic-1.png" alt="Automation Logic 1" />
+        <div class="grid-label">Automation Logic — Scene 1</div>
+      </div>
+      <div class="gallery-img-grid-item">
+        <img src="auto-logic-2.png" alt="Automation Logic 2" />
+        <div class="grid-label">Automation Logic — Scene 2</div>
       </div>
     </div>
-    <p class="gallery-note">Live dashboard previews — connect your installed system to see real data</p>
+
+    <p class="gallery-note">Real screenshots from installed Emena Home Tech systems</p>
   </div>
 </section>
 
@@ -600,10 +624,16 @@
   }
 
   // Gallery tabs
-  function setTab(btn, label) {
+  function setTab(btn, imgFile, label) {
     document.querySelectorAll('.gallery-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('gallery-label').textContent = label + ' Interface';
+    var img = document.getElementById('gallery-main-img');
+    img.style.opacity = '0';
+    setTimeout(function() {
+      img.src = imgFile;
+      img.alt = label;
+      img.style.opacity = '1';
+    }, 200);
   }
 
   // Contact form
