@@ -644,8 +644,13 @@
     var service = document.getElementById('f-service').value.trim();
     var message = document.getElementById('f-message').value.trim();
 
-    if (!name || !email) {
-      alert('Please fill in at least your name and email.');
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!name) {
+      alert('Please enter your full name.');
+      return;
+    }
+    if (!email || !emailRegex.test(email)) {
+      alert('Please enter a valid email address (e.g. name@example.com).');
       return;
     }
 
