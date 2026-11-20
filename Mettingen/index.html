@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Übungstests Deutsch – Studienkolleg Mettingen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=1">
+<style>
+main{max-width:760px}
+a.tcard{display:block; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:14px 0; text-decoration:none; color:inherit; transition:border-color .2s, transform .2s}
+a.tcard:hover{border-color:var(--accent); transform:translateY(-2px)}
+a.tcard h2{font-size:22px; margin:0 0 4px; color:var(--accent)}
+a.tcard p{margin:0; color:var(--muted); font-size:15.5px}
+a.tcard .stat{margin-top:8px; font-size:15px; font-weight:600; color:var(--ink)}
+.mlist{list-style:none; margin:10px 0 0; padding:0}
+.mlist li{padding:10px 0; border-bottom:1px solid var(--line); font-size:15.5px}
+.mlist .where{font-size:13px; color:var(--muted); font-weight:600}
+.mlist .ctx{font-family:"Source Serif 4",Georgia,serif; margin:2px 0}
+.mlist .ctx mark{background:var(--badbg); color:var(--bad); border-radius:3px; padding:0 2px}
+.mlist .ans{font-size:14.5px}
+.mlist .ans s{color:var(--bad)}
+.mlist .ans b{color:var(--ok)}
+.mlist .ex{font-size:14px; color:var(--muted)}
+.chips{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0}
+.chip{font-size:14px; background:var(--accent-soft); border-radius:20px; padding:3px 12px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Übungstests Deutsch</h1>
+  <p class="lead">Vorbereitung auf die Aufnahmeprüfung am Studienkolleg Mettingen · Niveau B1+/B2 · je ca. 60 Minuten</p>
+
+  <div id="tests"></div>
+
+  <section class="card" id="fehler">
+    <h2>Meine Fehler</h2>
+    <p class="meta" id="mCount"></p>
+    <div class="chips" id="mChips"></div>
+    <div class="actions" style="margin-top:6px">
+      <button type="button" id="exportBtn">Fehler exportieren</button>
+      <button type="button" class="ghost" id="viewBtn">Fehler ansehen</button>
+    </div>
+    <ul class="mlist" id="mList" hidden></ul>
+  </section>
+
+  <section class="card">
+    <h2>Speichern &amp; Sichern</h2>
+    <p class="save-state">Antworten, Verlauf und Fehler werden automatisch in diesem Browser auf diesem Gerät gespeichert. Mit dem Sicherungscode kannst du alles sichern oder auf ein anderes Gerät mitnehmen.</p>
+    <div class="actions">
+      <button type="button" class="ghost" id="backupBtn">Sicherungscode kopieren</button>
+      <button type="button" class="ghost" id="restoreBtn">Sicherungscode laden</button>
+    </div>
+  </section>
+
+  <p class="meta">Diese Tests sind keine offiziellen Tests des Studienkollegs. Sie folgen dem typischen Format (C-Test, Grammatik, Leseverstehen, Schreiben).</p>
+</main>
+
+<script src="common.js?v=1"></script>
+<script>
+(function(){
+const M = window.MT, $ = id => document.getElementById(id);
+
+function render(){
+  const s = M.store;
+  $('tests').innerHTML = Object.entries(M.TESTS).map(([id, t]) => {
+    const h = s.history.filter(x => x.test === id);
+    const pct = x => Math.round(x.total / x.max * 100);
+    const started = s.tests[id] && (Object.keys(s.tests[id].c || {}).length || Object.keys(s.tests[id].r || {}).length);
+    const stat = h.length
+      ? `${h.length} ${h.length === 1 ? 'Versuch' : 'Versuche'} · bestes Ergebnis ${Math.max(...h.map(pct))} % · zuletzt ${pct(h[h.length - 1])} %`
+      : started ? 'Angefangen – weiter, wo du aufgehört hast' : 'Noch nicht gemacht';
+    return `<a class="tcard" href="test.html?t=${id}"><h2>${M.esc(t.title)}</h2><p>${M.esc(t.desc)}</p><div class="stat">${stat}</div></a>`;
+  }).join('');
+
+  const ms = s.mistakes;
+  $('mCount').textContent = ms.length
+    ? `Gespeicherte Fehler: ${ms.length}. Exportiere sie als Datei für deinen Lernzettel.`
+    : 'Noch keine Fehler gespeichert. Sobald du einen Teil auswertest, wird jeder Fehler hier gespeichert.';
+  const byPart = {}; ms.forEach(m => byPart[m.part] = (byPart[m.part] || 0) + 1);
+  $('mChips').innerHTML = Object.entries(M.PARTS).filter(([k]) => byPart[k]).map(([k, n]) => `<span class="chip">${n}: ${byPart[k]}</span>`).join('');
+  $('exportBtn').hidden = $('viewBtn').hidden = !ms.length;
+  if (!ms.length) $('mList').hidden = true;
+  $('mList').innerHTML = ms.slice().reverse().map(m => {
+    const ctx = M.esc(m.context).replace(/\[\[(.*?)\]\]/, (_, x) => `<mark>${x}</mark>`);
+    const d = new Date(m.at);
+    return `<li><div class="where">${M.esc((M.TESTS[m.test] || {}).title || m.test)} · ${M.esc(M.PARTS[m.part])} · ${M.esc(m.label)} · ${d.toLocaleDateString('de-DE')}</div>
+      <div class="ctx">${ctx}</div>
+      <div class="ans">${m.typed ? `Deine Antwort: <s>${M.esc(m.typed)}</s> · ` : 'Leer gelassen · '}Richtig: <b>${M.esc(m.correct)}</b></div>
+      ${m.expl ? `<div class="ex">${M.esc(m.expl)}</div>` : ''}</li>`;
+  }).join('');
+}
+$('exportBtn').onclick = () => M.downloadMistakes();
+$('viewBtn').onclick = () => { const l = $('mList'); l.hidden = !l.hidden; $('viewBtn').textContent = l.hidden ? 'Fehler ansehen' : 'Fehler ausblenden'; };
+$('backupBtn').onclick = () => M.showBackup();
+$('restoreBtn').onclick = () => M.askBackup(render);
+window.addEventListener('pageshow', () => { M.reload(); render(); });
+render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Übungstest – Aufnahmeprüfung Deutsch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=1">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="back" href="./">← Übersicht</a>
+    <div class="brand" id="brand">Übungstest</div>
+    <nav>
+      <a href="#teil-1">C-Test</a><a href="#teil-2">Grammatik</a><a href="#teil-3">Lesen</a><a href="#teil-4">Schreiben</a><a href="#ergebnis">Ergebnis</a>
+    </nav>
+    <div class="timer"><span class="clock" id="clock">60:00</span><button id="timerBtn" type="button">Zeit starten</button></div>
+  </div>
+  <div class="banner" id="banner">Die Zeit ist um! Du kannst trotzdem weitermachen und auswerten.</div>
+</header>
+
+<main>
+  <h1 id="testTitle">Aufnahmeprüfung Deutsch</h1>
+  <p class="lead">Vorbereitung auf das Studienkolleg Mettingen · Niveau B1+/B2 · ca. 60 Minuten</p>
+
+  <div class="note">
+    <strong>Hinweis:</strong> Das ist kein offizieller Test des Studienkollegs. Er folgt dem Format, das die meisten Studienkollegs benutzen.
+    <ul>
+      <li><b>Teil 1 – C-Test</b> (25 Min.): 4 Texte, 80 Lücken</li>
+      <li><b>Teil 2 – Grammatik &amp; Satzbau</b> (15 Min.): 20 Aufgaben</li>
+      <li><b>Teil 3 – Leseverstehen</b> (20 Min.): 1 Text, 9 Aufgaben</li>
+      <li><b>Teil 4 – Schreiben</b> (zusätzlich, ca. 10–15 Min.): kurzer Text mit Musterlösung</li>
+    </ul>
+    Deine Antworten werden automatisch gespeichert. Jeder Fehler wird beim Auswerten gespeichert – exportieren kannst du sie auf der <a href="./">Übersicht</a>.
+  </div>
+
+  <section class="card" id="teil-1">
+    <h2>Teil 1: C-Test</h2>
+    <div class="meta">Empfohlene Zeit: 25 Minuten · 80 Punkte</div>
+    <div class="note">
+      <strong>Aufgabe:</strong> Ergänzen Sie die fehlenden Worthälften. Ab dem zweiten Satz fehlt bei jedem zweiten Wort die zweite Hälfte. Bei Wörtern mit ungerader Buchstabenzahl fehlt die größere Hälfte (z.&nbsp;B. <i>d<u>er</u></i>, <i>Stu<u>nden</u></i>). Der erste und der letzte Satz sind vollständig.<br>
+      <strong>Achtung:</strong> Auch Rechtschreibfehler (ä/ö/ü, ß, Groß-/Kleinschreibung) zählen als Fehler.
+    </div>
+    <div id="ctests"></div>
+    <div class="actions"><button type="button" id="evalC">Teil 1 auswerten</button><span class="score" id="scoreC"></span></div>
+  </section>
+
+  <section class="card" id="teil-2">
+    <h2>Teil 2: Grammatik &amp; Satzbau</h2>
+    <div class="meta">Empfohlene Zeit: 15 Minuten · 20 Punkte</div>
+    <div class="note"><strong>Aufgabe:</strong> Wählen Sie jeweils die richtige Lösung (A, B, C oder D). Bei den Satzbau-Aufgaben ist nur <u>ein</u> Satz grammatisch richtig.</div>
+    <div id="gram"></div>
+    <div class="actions"><button type="button" id="evalG">Teil 2 auswerten</button><span class="score" id="scoreG"></span></div>
+  </section>
+
+  <section class="card" id="teil-3">
+    <h2>Teil 3: Leseverstehen</h2>
+    <div class="meta">Empfohlene Zeit: 20 Minuten · 9 Punkte</div>
+    <div class="note"><strong>Aufgabe:</strong> Lesen Sie den Text. Lösen Sie dann die Aufgaben 1–9.</div>
+    <div class="reading" id="reading"></div>
+    <h3>Aufgaben 1–6: Richtig, falsch oder nicht im Text?</h3>
+    <div id="lesenA"></div>
+    <h3>Aufgaben 7–9: Wählen Sie die richtige Antwort.</h3>
+    <div id="lesenB"></div>
+    <div class="actions"><button type="button" id="evalL">Teil 3 auswerten</button><span class="score" id="scoreL"></span></div>
+  </section>
+
+  <section class="card" id="teil-4">
+    <h2>Teil 4: Schreiben (zusätzlich)</h2>
+    <div class="meta">Empfohlene Zeit: 10–15 Minuten · wird nicht automatisch bewertet</div>
+    <div class="note"><span id="task"></span><br>Was ist Ihre Meinung? Schreiben Sie einen Text von <b>ca. 80–100 Wörtern</b>. Nennen Sie mindestens zwei Argumente und ein Gegenargument.</div>
+    <textarea id="essay" placeholder="Schreiben Sie hier Ihren Text …" spellcheck="false"></textarea>
+    <div class="actions">
+      <span class="meta" id="wc" style="margin:0">0 Wörter</span>
+      <button type="button" class="ghost" id="modelBtn">Musterlösung &amp; Checkliste zeigen</button>
+    </div>
+    <div id="model" hidden>
+      <h3>Checkliste – hast du an alles gedacht?</h3>
+      <ul class="check">
+        <li>Ist deine Meinung am Anfang klar? (<i>Meiner Meinung nach …, Ich bin der Ansicht, dass …</i>)</li>
+        <li>Hast du mindestens zwei Argumente mit Begründung?</li>
+        <li>Hast du ein Gegenargument genannt? (<i>Andererseits …, Allerdings muss man bedenken, dass …</i>)</li>
+        <li>Benutzt du Konnektoren? (<i>erstens, außerdem, deshalb, obwohl, trotzdem</i>)</li>
+        <li>Hast du einen Schluss? (<i>Insgesamt …, Zusammenfassend …</i>)</li>
+        <li>Steht das Verb im Hauptsatz an Position 2 und im Nebensatz am Ende?</li>
+      </ul>
+      <h3>Musterlösung (ca. 95 Wörter)</h3>
+      <div class="model" id="modelText"></div>
+    </div>
+  </section>
+
+  <section class="card" id="ergebnis">
+    <h2>Ergebnis</h2>
+    <div class="meta">Werte alle Teile auf einmal aus oder fange einen neuen Versuch an. Deine Fehler bleiben gespeichert.</div>
+    <div class="actions" style="margin-top:0">
+      <button type="button" id="evalAll">Alles auswerten</button>
+      <button type="button" class="ghost" id="resetBtn">Neuer Versuch</button>
+    </div>
+    <table class="res">
+      <tr><td>Teil 1: C-Test</td><td class="n" id="rC"></td></tr>
+      <tr><td>Teil 2: Grammatik &amp; Satzbau</td><td class="n" id="rG"></td></tr>
+      <tr><td>Teil 3: Leseverstehen</td><td class="n" id="rL"></td></tr>
+      <tr><td><b>Gesamt</b></td><td class="n" id="rT"></td></tr>
+    </table>
+    <div class="bar"><span id="barFill"></span></div>
+    <p id="feedback" class="meta" style="margin-top:12px"></p>
+    <h3>Verlauf – deine bisherigen Versuche</h3>
+    <table class="res" id="histTable"></table>
+    <p class="meta"><a href="./">Zur Übersicht</a> – dort kannst du alle Fehler exportieren oder einen Sicherungscode erstellen.</p>
+  </section>
+</main>
+
+<script src="common.js?v=1"></script>
+<script>
+(function(){
+  const n = (new URLSearchParams(location.search).get('t') || '1').replace(/\D/g, '') || '1';
+  const s = document.createElement('script');
+  s.src = 'tests/' + n + '.js?v=1';
+  s.onload = () => { const e = document.createElement('script'); e.src = 'engine.js?v=1'; document.body.appendChild(e); };
+  s.onerror = () => { document.querySelector('main').innerHTML = '<p style="padding:2em 0">Diesen Test gibt es nicht. <a href="./">Zur Übersicht</a></p>'; };
+  document.body.appendChild(s);
+})();
+</script>
+</body>
+</html>
