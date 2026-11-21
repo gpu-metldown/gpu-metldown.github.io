@@ -71,7 +71,7 @@
   <section class="card" id="teil-4">
     <h2>Teil 4: Schreiben (zusätzlich)</h2>
     <div class="meta">Empfohlene Zeit: 10–15 Minuten · wird nicht automatisch bewertet</div>
-    <div class="note"><span id="task"></span><br>Was ist Ihre Meinung? Schreiben Sie einen Text von <b>ca. 80–100 Wörtern</b>. Nennen Sie mindestens zwei Argumente und ein Gegenargument.</div>
+    <div class="note" id="task"></div>
     <textarea id="essay" placeholder="Schreiben Sie hier Ihren Text …" spellcheck="false"></textarea>
     <div class="actions">
       <span class="meta" id="wc" style="margin:0">0 Wörter</span>
@@ -113,13 +113,13 @@
   </section>
 </main>
 
-<script src="common.js?v=1"></script>
+<script src="common.js?v=2"></script>
 <script>
 (function(){
   const n = (new URLSearchParams(location.search).get('t') || '1').replace(/\D/g, '') || '1';
   const s = document.createElement('script');
   s.src = 'tests/' + n + '.js?v=1';
-  s.onload = () => { const e = document.createElement('script'); e.src = 'engine.js?v=1'; document.body.appendChild(e); };
+  s.onload = () => { const e = document.createElement('script'); e.src = 'engine.js?v=2'; document.body.appendChild(e); };
   s.onerror = () => { document.querySelector('main').innerHTML = '<p style="padding:2em 0">Diesen Test gibt es nicht. <a href="./">Zur Übersicht</a></p>'; };
   document.body.appendChild(s);
 })();

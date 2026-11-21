@@ -6,7 +6,8 @@ const MAX_LOG = 5000;
 // Alle Tests. Neuer Test: hier eintragen und tests/<id>.js anlegen.
 const TESTS = {
   "1": {title: "Übungstest 1", desc: "C-Test (Schlaf, Fahrrad, Lernen, Bienen) · 20 Grammatikaufgaben · Leseverstehen „Zu gut für die Tonne“ · Schreiben"},
-  "2": {title: "Übungstest 2", desc: "C-Test (Homeoffice, Leitungswasser, Ehrenamt, alte Handys) · 20 Grammatikaufgaben · Leseverstehen „Mit zwei Sprachen aufwachsen“ · Schreiben"}
+  "2": {title: "Übungstest 2", desc: "C-Test (Homeoffice, Leitungswasser, Ehrenamt, alte Handys) · 20 Grammatikaufgaben · Leseverstehen „Mit zwei Sprachen aufwachsen“ · Schreiben"},
+  "3": {title: "Übungstest 3", desc: "C-Test (Online-Shopping, Wohnungssuche, Musik beim Lernen, Wald) · 20 Grammatikaufgaben · Leseverstehen „Hausaufgaben mit KI?“ · Schreiben"}
 };
 const PARTS = {C: "C-Test", G: "Grammatik & Satzbau", L: "Leseverstehen"};
 
