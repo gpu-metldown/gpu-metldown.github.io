@@ -58,7 +58,7 @@ a.tcard .stat{margin-top:8px; font-size:15px; font-weight:600; color:var(--ink)}
   <p class="meta">Diese Tests sind keine offiziellen Tests des Studienkollegs. Sie folgen dem typischen Format (C-Test, Grammatik, Leseverstehen, Schreiben).</p>
 </main>
 
-<script src="common.js?v=3"></script>
+<script src="common.js?v=4"></script>
 <script>
 (function(){
 const M = window.MT, $ = id => document.getElementById(id);
@@ -72,7 +72,7 @@ function render(){
     const stat = h.length
       ? `${h.length} ${h.length === 1 ? 'Versuch' : 'Versuche'} · bestes Ergebnis ${Math.max(...h.map(pct))} % · zuletzt ${pct(h[h.length - 1])} %`
       : started ? 'Angefangen – weiter, wo du aufgehört hast' : 'Noch nicht gemacht';
-    return `<a class="tcard" href="test.html?t=${id}"><h2>${M.esc(t.title)}</h2><p>${M.esc(t.desc)}</p><div class="stat">${stat}</div></a>`;
+    return `<a class="tcard" href="${t.page || 'test.html?t=' + id}"><h2>${M.esc(t.title)}</h2><p>${M.esc(t.desc)}</p><div class="stat">${stat}</div></a>`;
   }).join('');
 
   const ms = s.mistakes;
