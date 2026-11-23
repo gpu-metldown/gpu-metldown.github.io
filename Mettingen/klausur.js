@@ -22,36 +22,85 @@ function st(){
 // Jede "Einheit" ist ein Punkt: {key, task, label, get(), set(v), check(v), mark(ok), correctText, context, expl}
 const units = [];
 const taskUnits = [];
+const writes = [];
 const sentenceOf = s => ((s.match(/[^.!?]+[.!?]*/g) || [s]).map(x => x.trim()).find(x => x.includes('[[')) || s).trim();
 
 function renderTask(t, ti){
   const n = ti + 1, own = [];
-  let h = `<section class="card" id="aufgabe-${n}"><div class="thead"><span class="task-n">Aufgabe ${n}</span><span class="tscore" id="ts${ti}"></span></div>
+  let h = (t.section ? `<h2 class="sect">${t.section}</h2>` : '') + `<section class="card" id="aufgabe-${n}"><div class="thead"><span class="task-n">Aufgabe ${n}</span><span class="tscore" id="ts${ti}"></span></div>
     <h2 class="instr">${t.instr}</h2>`;
   if (t.type === 'multi' || t.type === 'single') {
-    const multi = t.type === 'multi', key = 't' + ti;
-    h += `<div class="prompt">${t.prompt}</div>`;
+    const multi = t.type === 'multi', many = Array.isArray(t.items);
+    const items = many ? t.items : [{prompt: t.prompt, options: t.options, correct: t.correct}];
+    if (many && t.prompt) h += `<div class="${t.reading ? 'reading' : 'prompt'}">${t.prompt}</div>`;
     if (t.note) h += `<div class="small-note">${esc(t.note)}</div>`;
-    h += `<div class="hint">${t.hint || 'Wählen Sie eine Antwort:'}</div><div class="opts" id="${key}">` +
-      t.options.map((o, j) => `<label class="opt"><input type="${multi ? 'checkbox' : 'radio'}" name="${key}" value="${j}"><span>${String.fromCharCode(97 + j)}. ${o}</span></label>`).join('') + '</div>';
-    const correct = multi ? t.correct.slice().sort().join(',') : String(t.correct);
-    own.push({
-      key, task: ti, label: `Aufgabe ${n}`,
-      get: () => [...document.querySelectorAll(`input[name="${key}"]:checked`)].map(i => i.value).sort().join(','),
-      set: v => String(v || '').split(',').forEach(j => { const i = document.querySelector(`input[name="${key}"][value="${j}"]`); if (i) i.checked = true; }),
-      check: v => v === correct,
-      mark: () => {
-        const sel = new Set(own[0].get().split(',').filter(Boolean));
-        const corr = new Set(correct.split(','));
-        document.querySelectorAll(`#${key} .opt`).forEach((l, j) => {
-          l.classList.remove('ok', 'bad');
-          if (corr.has(String(j))) l.classList.add('ok'); else if (sel.has(String(j))) l.classList.add('bad');
-        });
-      },
-      typedText: v => String(v || '').split(',').filter(Boolean).map(j => String.fromCharCode(97 + +j) + '. ' + M.stripHtml(t.options[+j])).join(' | '),
-      correctText: correct.split(',').map(j => String.fromCharCode(97 + +j) + '. ' + M.stripHtml(t.options[+j])).join(' | '),
-      context: M.stripHtml(t.prompt).slice(0, 300), expl: M.stripHtml(t.expl)
+    if (many) h += `<div class="hint">${t.hint || (multi ? 'Wählen Sie eine oder mehrere Antworten:' : 'Wählen Sie jeweils eine Antwort:')}</div>`;
+    items.forEach((q, qi) => {
+      const key = many ? `t${ti}i${qi}` : 't' + ti;
+      const opts = q.options || t.options;
+      const lab = j => t.plain ? '' : String.fromCharCode(97 + j) + '. ';
+      h += many ? `<div class="q"><div class="qt"><b>${qi + 1}.</b> ${q.prompt}</div>`
+                : `<div class="prompt">${q.prompt}</div><div class="hint">${t.hint || 'Wählen Sie eine Antwort:'}</div>`;
+      h += `<div class="opts${t.plain ? ' row' : ''}" id="${key}">` +
+        opts.map((o, j) => `<label class="opt"><input type="${multi ? 'checkbox' : 'radio'}" name="${key}" value="${j}"><span>${lab(j)}${o}</span></label>`).join('') + '</div>';
+      if (many && q.expl) h += `<div class="expl" id="${key}x" hidden>${q.expl}</div>`;
+      if (many) h += '</div>';
+      const correct = multi ? q.correct.slice().sort().join(',') : String(q.correct);
+      const u = {
+        key, task: ti, label: `Aufgabe ${n}` + (many ? `, Nr. ${qi + 1}` : ''),
+        get: () => [...document.querySelectorAll(`input[name="${key}"]:checked`)].map(i => i.value).sort().join(','),
+        set: v => String(v || '').split(',').forEach(j => { const i = document.querySelector(`input[name="${key}"][value="${j}"]`); if (i) i.checked = true; }),
+        check: v => v === correct,
+        mark: () => {
+          const sel = new Set(u.get().split(',').filter(Boolean)), corr = new Set(correct.split(','));
+          document.querySelectorAll(`#${key} .opt`).forEach((l, j) => {
+            l.classList.remove('ok', 'bad');
+            if (corr.has(String(j))) l.classList.add('ok'); else if (sel.has(String(j))) l.classList.add('bad');
+          });
+          const x = $(key + 'x'); if (x) x.hidden = false;
+        },
+        typedText: v => String(v || '').split(',').filter(Boolean).map(j => lab(+j) + M.stripHtml(opts[+j])).join(' | '),
+        correctText: correct.split(',').map(j => lab(+j) + M.stripHtml(opts[+j])).join(' | '),
+        context: M.stripHtml(many ? q.prompt : t.prompt).slice(0, 300), expl: M.stripHtml(many ? (q.expl || '') : t.expl)
+      };
+      own.push(u);
     });
+  }
+  else if (t.type === 'cloze') {
+    // Lückentext mit Auswahl: [[falsch|*richtig|falsch|falsch]]
+    const parts = t.text.split(/\[\[(.*?)\]\]/);
+    let body = '', k = 0; const gaps = [];
+    parts.forEach((p, i) => {
+      if (i % 2 === 0) { body += p; return; }
+      const opts = p.split('|').map(s => s.trim()), ci = opts.findIndex(o => o.startsWith('*'));
+      const clean = opts.map(o => o.replace(/^\*/, '')), key = `t${ti}c${k}`, letter = String.fromCharCode(97 + k);
+      gaps.push({key, clean, ans: clean[ci], idx: i, letter});
+      body += `<span class="cl">(${letter})&nbsp;<select class="pick" id="${key}" aria-label="Lücke ${letter}"><option value="">…</option>${clean.map(o => `<option>${esc(o)}</option>`).join('')}</select></span>`;
+      k++;
+    });
+    if (t.hint) h += `<div class="hint">${t.hint}</div>`;
+    if (t.title) h += `<h3 style="margin-top:6px">${t.title}</h3>`;
+    h += `<p class="ctext" style="line-height:2.3">${body}</p>`;
+    gaps.forEach(g => {
+      const ctx = parts.map((p, i) => i % 2 === 0 ? p : (i === g.idx ? '[[___]]' : gaps.find(x => x.idx === i).ans)).join('');
+      own.push({
+        key: g.key, task: ti, label: `Aufgabe ${n}, Lücke (${g.letter})`,
+        get: () => $(g.key).value, set: v => { $(g.key).value = v || ''; },
+        check: v => v === g.ans,
+        mark: ok => { $(g.key).classList.remove('ok', 'bad'); $(g.key).classList.add(ok ? 'ok' : 'bad');
+          const nx = $(g.key).nextElementSibling; if (nx && nx.classList.contains('sol')) nx.remove();
+          if (!ok) $(g.key).insertAdjacentHTML('afterend', `<span class="sol">${esc(g.ans)}</span>`); },
+        typedText: v => v, correctText: g.ans, context: sentenceOf(ctx), expl: ''
+      });
+    });
+  }
+  else if (t.type === 'write') {
+    h += `<div class="prompt" style="font-family:inherit;font-size:17px">${t.prompt}</div>
+      <textarea id="t${ti}w" placeholder="Schreiben Sie hier Ihren Text …" spellcheck="false"></textarea>
+      <div class="actions"><span class="meta" id="t${ti}wc" style="margin:0">0 Wörter</span>
+      <button type="button" class="ghost" id="t${ti}mb">Redemittel &amp; Musterlösung zeigen</button></div>
+      <div id="t${ti}m" hidden>${t.model}</div>`;
+    writes.push(ti);
   }
   else if (t.type === 'select') {
     if (t.hint) h += `<div class="hint">${t.hint}</div>`;
@@ -109,8 +158,18 @@ function renderTask(t, ti){
 $('tasks').innerHTML = T.tasks.map(renderTask).join('');
 T.tasks.forEach((t, ti) => { if (!t.expl) $('x' + ti).remove(); });
 
+/* ---- Schreiben ---- */
+function countWords(ti){
+  const t = $(`t${ti}w`).value.trim(), n = t ? t.split(/\s+/).length : 0;
+  $(`t${ti}wc`).textContent = `${n} Wörter` + (n ? (n < 80 ? ' (zu kurz)' : n > 110 ? ' (etwas zu lang)' : ' ✓') : '');
+}
+writes.forEach(ti => {
+  $(`t${ti}w`).addEventListener('input', () => countWords(ti));
+  $(`t${ti}mb`).onclick = () => { const m = $(`t${ti}m`); m.hidden = !m.hidden; };
+});
+
 /* ---- Speichern ---- */
-function save(){ const s = st(); s.a = {}; units.forEach(u => { const v = u.get(); if (v) s.a[u.key] = v; }); M.saveStore(); }
+function save(){ const s = st(); s.a = {}; units.forEach(u => { const v = u.get(); if (v) s.a[u.key] = v; }); s.w = {}; writes.forEach(ti => { const v = $(`t${ti}w`).value; if (v) s.w[ti] = v; }); M.saveStore(); }
 let saveT;
 document.addEventListener('input', () => { clearTimeout(saveT); saveT = setTimeout(save, 300); });
 document.addEventListener('change', save);
@@ -130,6 +189,7 @@ function evaluate(silent){
       typed: u.typedText(v), correct: u.correctText, context: u.context, expl: u.expl});
   });
   taskUnits.forEach((own, ti) => {
+    if (!own.length) return;
     const g = own.filter(u => u.check(u.get())).length, el = $('ts' + ti);
     el.textContent = `${g} / ${own.length}`; el.className = 'tscore score ' + scoreClass(g / own.length);
     const x = $('x' + ti); if (x) x.hidden = false;
@@ -149,7 +209,7 @@ function evaluate(silent){
   const p = got / max;
   $('scoreAll').textContent = `${got} / ${max} Punkte (${Math.round(p * 100)} %)`; $('scoreAll').className = 'score ' + scoreClass(p);
   $('barFill').style.width = Math.round(p * 100) + '%';
-  const weakest = taskUnits.map((own, ti) => [ti + 1, own.filter(u => u.check(u.get())).length / own.length]).sort((x, y) => x[1] - y[1])[0];
+  const weakest = taskUnits.map((own, ti) => [ti + 1, own.length ? own.filter(u => u.check(u.get())).length / own.length : 1]).sort((x, y) => x[1] - y[1])[0];
   $('feedback').innerHTML = `<b>${Math.round(p * 100)} % insgesamt.</b> ` + (p >= 0.8 ? 'Sehr gut!' : p >= 0.6 ? 'Gut – aber da geht noch mehr.' : 'Hier brauchst du noch Übung.') +
     (weakest[1] < 1 ? ` Am schwächsten: <a href="#aufgabe-${weakest[0]}">Aufgabe ${weakest[0]}</a>. Lies dort die Erklärungen.` : '') +
     ` ${wrong.length ? wrong.length + ' Fehler wurden gespeichert.' : ''}`;
@@ -180,6 +240,7 @@ $('resetBtn').onclick = () => {
     document.querySelectorAll('#tasks input').forEach(i => { if (i.type === 'text' || !i.type || i.type === 'search') i.value = ''; else i.checked = false; i.classList.remove('ok', 'bad'); });
     document.querySelectorAll('#tasks .gap input').forEach(i => { i.value = ''; i.classList.remove('ok', 'bad'); });
     document.querySelectorAll('#tasks select').forEach(s => { s.value = ''; s.classList.remove('ok', 'bad'); });
+    writes.forEach(ti => { $(`t${ti}w`).value = ''; countWords(ti); $(`t${ti}m`).hidden = true; });
     document.querySelectorAll('.sol').forEach(x => x.remove());
     document.querySelectorAll('.opt').forEach(l => l.classList.remove('ok', 'bad'));
     document.querySelectorAll('.expl, .srow .e').forEach(x => x.hidden = true);
@@ -215,6 +276,7 @@ renderClock();
 (function restore(){
   const s = st();
   units.forEach(u => { if (s.a[u.key]) u.set(s.a[u.key]); });
+  writes.forEach(ti => { if (s.w && s.w[ti]) { $(`t${ti}w`).value = s.w[ti]; countWords(ti); } });
   if (s.evaluated) evaluate(true);
   else if (Object.keys(s.a).length) M.toast('Weiter, wo du aufgehört hast.');
 })();
