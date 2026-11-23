@@ -73,13 +73,13 @@ h2.sect{font-size:21px; margin:34px 0 -6px; padding-left:12px; border-left:4px s
     <p class="meta"><a href="./">Zur Übersicht</a> – dort kannst du alle Fehler exportieren oder einen Sicherungscode erstellen.</p>
   </section>
 </main>
-<script src="common.js?v=5"></script>
+<script src="common.js?v=6"></script>
 <script>
 (function(){
   const n = (new URLSearchParams(location.search).get('t') || '5').replace(/\D/g, '') || '5';
   const s = document.createElement('script');
-  s.src = 'tests/' + n + '.js?v=2';
-  s.onload = () => { const e = document.createElement('script'); e.src = 'klausur.js?v=2'; document.body.appendChild(e); };
+  s.src = 'tests/' + n + '.js?v=3';
+  s.onload = () => { const e = document.createElement('script'); e.src = 'klausur.js?v=4'; document.body.appendChild(e); };
   s.onerror = () => { document.querySelector('main').innerHTML = '<p style="padding:2em 0">Diese Klausur gibt es nicht. <a href="./">Zur Übersicht</a></p>'; };
   document.body.appendChild(s);
 })();

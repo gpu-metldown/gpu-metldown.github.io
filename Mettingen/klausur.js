@@ -13,7 +13,9 @@ $('intro').innerHTML = T.intro || '';
 
 function st(){
   const s = M.store;
-  if (!s.tests[T.id]) s.tests[T.id] = {attempt: Date.now(), a: {}, evaluated: false};
+  const ver = T.version || 1;
+  // Neue Version der Klausur (andere Aufgaben) → alte Antworten passen nicht mehr. Verlauf und Fehler bleiben.
+  if (!s.tests[T.id] || (s.tests[T.id].v || 1) !== ver) s.tests[T.id] = {attempt: Date.now(), a: {}, evaluated: false, v: ver};
   const x = s.tests[T.id]; if (!x.a) x.a = {};
   return x;
 }
@@ -127,8 +129,9 @@ function renderTask(t, ti){
     parts.forEach((p, i) => {
       if (i % 2 === 0) { body += esc(p); return; }
       const g = gaps[(i - 1) / 2], key = `t${ti}g${(i - 1) / 2}`;
-      body += `<span class="gap"><input id="${key}" style="width:${(g.ans.length + 1.6).toFixed(1)}ch" maxlength="${g.stem.length + g.ans.length + 2}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Lücke ${(i - 1) / 2 + 1}"></span>`;
+      body += `<span class="gap"><input id="${key}" style="width:7.5ch" maxlength="14" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Lücke ${(i - 1) / 2 + 1}"></span>`;
     });
+    if (t.hint) h += `<div class="hint">${t.hint}</div>`;
     h += `<p class="ctext">${body}</p>`;
     gaps.forEach((g, k) => {
       const key = `t${ti}g${k}`;
@@ -236,7 +239,7 @@ $('resetBtn').onclick = () => {
     if (e.target === scrim || (a && a.dataset.a === 'no')) { scrim.remove(); return; }
     if (!a) return;
     scrim.remove();
-    M.store.tests[T.id] = {attempt: Date.now(), a: {}, evaluated: false};
+    M.store.tests[T.id] = {attempt: Date.now(), a: {}, evaluated: false, v: T.version || 1};
     document.querySelectorAll('#tasks input').forEach(i => { if (i.type === 'text' || !i.type || i.type === 'search') i.value = ''; else i.checked = false; i.classList.remove('ok', 'bad'); });
     document.querySelectorAll('#tasks .gap input').forEach(i => { i.value = ''; i.classList.remove('ok', 'bad'); });
     document.querySelectorAll('#tasks select').forEach(s => { s.value = ''; s.classList.remove('ok', 'bad'); });

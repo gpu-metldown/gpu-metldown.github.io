@@ -9,7 +9,7 @@ const TESTS = {
   "2": {title: "Übungstest 2", desc: "C-Test (Homeoffice, Leitungswasser, Ehrenamt, alte Handys) · 20 Grammatikaufgaben · Leseverstehen „Mit zwei Sprachen aufwachsen“ · Schreiben"},
   "3": {title: "Übungstest 3", desc: "C-Test (Online-Shopping, Wohnungssuche, Musik beim Lernen, Wald) · 20 Grammatikaufgaben · Leseverstehen „Hausaufgaben mit KI?“ · Schreiben"},
   "4": {title: "Übungstest 4", desc: "C-Test (Mülltrennung, Buchdruck, Bewegung im Alltag, Haustiere) · 20 Grammatikaufgaben · Leseverstehen „Vier Tage arbeiten, drei Tage frei?“ · Schreiben"},
-  "5": {title: "Alte Klausur Mettingen", page: "klausur.html?t=5", desc: "Echter Aufnahmetest SoSe 2025 (16.12.2024): Sätze verbinden, Passiv, Grafik, Reflexivpronomen, C-Test, Adjektive, Relativpronomen · im Format des Online-Tests · 15 Minuten"},
+  "5": {title: "Alte Klausur Mettingen", page: "klausur.html?t=5", desc: "Zwei echte Aufnahmetests aus Mettingen (07.12.2024 + 16.12.2024): Grafik wahr/falsch, Relativpronomen, zwei C-Tests, Sätze verbinden, Passiv, Leseverstehen, Reflexivpronomen, Adjektive · plus Zusatz-Lesetext · 60 Minuten"},
   "6": {title: "Übungstest 6 (Mettingen-Format)", page: "klausur.html?t=6", desc: "Wie der echte Online-Test: Sätze verbinden, Passiv, Pronomen, Präpositionen, Adjektive, Lückentext mit Auswahl, Umformungen · 2 C-Tests · Grafik & Leseverstehen „Haben Bibliotheken eine Zukunft?“ · Grafik beschreiben · 60 Minuten"}
 };
 const PARTS = {C: "C-Test", G: "Grammatik & Satzbau", L: "Leseverstehen", X: "Alte Klausur"};
