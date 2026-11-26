@@ -36,6 +36,15 @@ select.pick.bad{background:var(--badbg); border-color:var(--bad); color:var(--ba
 .bars .v{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
 .chart .src{font-size:12.5px; color:var(--muted); margin-top:8px}
 @media (max-width:600px){ .bars .b{grid-template-columns:1fr auto; } .bars .t{grid-column:1 / -1; order:3} .instr{font-size:18px} }
+.listen{border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:6px 0 14px; background:var(--accent-soft)}
+.lrow{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.lrow button:disabled{opacity:.45; cursor:not-allowed}
+.rate{font-size:14.5px; color:var(--muted)}
+.rate select{font:inherit; margin-left:4px; border-radius:6px; border:1px solid var(--line); background:var(--card); color:var(--ink); padding:2px 4px}
+.plays{font-size:14.5px; font-weight:600; color:var(--muted)}
+.transcript{margin-top:10px; font-family:"Source Serif 4",Georgia,serif; font-size:16.5px}
+.transcript summary{cursor:pointer; font-family:"Source Sans 3",sans-serif; font-weight:600; color:var(--accent)}
+.transcript p{margin:6px 0}
 h2.sect{font-size:21px; margin:34px 0 -6px; padding-left:12px; border-left:4px solid var(--accent)}
 .cl{white-space:nowrap}
 .cl .pick{min-width:6em}
@@ -73,13 +82,13 @@ h2.sect{font-size:21px; margin:34px 0 -6px; padding-left:12px; border-left:4px s
     <p class="meta"><a href="./">Zur Übersicht</a> – dort kannst du alle Fehler exportieren oder einen Sicherungscode erstellen.</p>
   </section>
 </main>
-<script src="common.js?v=6"></script>
+<script src="common.js?v=7"></script>
 <script>
 (function(){
   const n = (new URLSearchParams(location.search).get('t') || '5').replace(/\D/g, '') || '5';
   const s = document.createElement('script');
-  s.src = 'tests/' + n + '.js?v=3';
-  s.onload = () => { const e = document.createElement('script'); e.src = 'klausur.js?v=4'; document.body.appendChild(e); };
+  s.src = 'tests/' + n + '.js?v=4';
+  s.onload = () => { const e = document.createElement('script'); e.src = 'klausur.js?v=6'; document.body.appendChild(e); };
   s.onerror = () => { document.querySelector('main').innerHTML = '<p style="padding:2em 0">Diese Klausur gibt es nicht. <a href="./">Zur Übersicht</a></p>'; };
   document.body.appendChild(s);
 })();

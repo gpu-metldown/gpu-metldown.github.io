@@ -27,10 +27,80 @@ const taskUnits = [];
 const writes = [];
 const sentenceOf = s => ((s.match(/[^.!?]+[.!?]*/g) || [s]).map(x => x.trim()).find(x => x.includes('[[')) || s).trim();
 
+/* ---- Hörverstehen (Sprachausgabe des Browsers) ---- */
+const audioTasks = [];
+const synth = ('speechSynthesis' in window) ? window.speechSynthesis : null;
+let deVoices = [];
+function loadVoices(){ try { deVoices = synth ? synth.getVoices().filter(v => /^de([-_]|$)/i.test(v.lang)) : []; } catch(e){ deVoices = []; } }
+if (synth) { loadVoices(); try { synth.addEventListener('voiceschanged', loadVoices); } catch(e){ synth.onvoiceschanged = loadVoices; } }
+const FEMALE = /anna|petra|helena|katja|hedda|marlene|vicki|sabine|female|frau|seraphina|amala|katja|google deutsch$/i;
+const MALE = /markus|yannick|stefan|hans|conrad|viktor|male|mann|killian|florian|jonas/i;
+function voiceFor(g){
+  if (!deVoices.length) return null;
+  const pref = deVoices.filter(v => (g === 'm' ? MALE : FEMALE).test(v.name));
+  const local = l => l.filter(v => v.localService);
+  return (local(pref)[0] || pref[0]) || (local(deVoices)[0] || deVoices[0]);
+}
+function audioHtml(t, ti){
+  const id = 't' + ti, a = t.audio;
+  const script = a.script.map(l => `<p>${l.sp ? `<b>${esc(l.sp)}:</b> ` : ''}${esc(l.text)}</p>`).join('');
+  audioTasks.push(ti);
+  return `<div class="listen">
+    <div class="lrow">
+      <button type="button" id="${id}play">▶ Abspielen</button>
+      <button type="button" class="ghost" id="${id}stop" hidden>■ Stopp</button>
+      <label class="rate">Tempo <select id="${id}rate"><option value="0.85">langsam</option><option value="1" selected>normal</option></select></label>
+      <span class="plays" id="${id}count"></span>
+    </div>
+    <div class="small-note" id="${id}warn" hidden></div>
+    <details class="transcript" id="${id}tr" hidden><summary>Hörtext lesen</summary>${script}</details>
+  </div>`;
+}
+let speakingTi = null;
+function stopSpeech(){ if (synth) synth.cancel(); if (speakingTi !== null) { $(`t${speakingTi}stop`).hidden = true; $(`t${speakingTi}play`).disabled = false; speakingTi = null; updateAudioUI(); } }
+function playsOf(ti){ const p = st().plays || {}; return p[ti] || 0; }
+function updateAudioUI(){
+  audioTasks.forEach(ti => {
+    const a = T.tasks[ti].audio, max = a.maxPlays || 2, used = playsOf(ti), free = st().evaluated;
+    const btn = $(`t${ti}play`), cnt = $(`t${ti}count`);
+    if (speakingTi === ti) return;
+    btn.textContent = used ? '▶ Noch einmal hören' : '▶ Abspielen';
+    btn.disabled = !free && used >= max;
+    cnt.textContent = free ? 'Unbegrenzt (nach der Auswertung)' : `Durchgang ${Math.min(used, max)} von ${max}`;
+    if (free) $(`t${ti}tr`).hidden = false; else if ($(`t${ti}warn`).hidden) $(`t${ti}tr`).hidden = true;
+  });
+}
+function playAudio(ti){
+  const a = T.tasks[ti].audio;
+  if (!synth) { const w = $(`t${ti}warn`); w.hidden = false; w.innerHTML = 'Dein Browser kann keinen Text vorlesen. Öffne die Seite in Safari, Chrome oder Edge – oder lies den Hörtext unten.'; $(`t${ti}tr`).hidden = false; return; }
+  stopSpeech();
+  loadVoices();
+  const noDe = !deVoices.length;
+  if (noDe) { const w = $(`t${ti}warn`); w.hidden = false; w.textContent = 'Auf diesem Gerät wurde keine deutsche Stimme gefunden – dieser Durchgang zählt nicht. Falls die Aussprache falsch klingt, installiere eine deutsche Stimme in den Systemeinstellungen oder lies den Hörtext unten.'; $(`t${ti}tr`).hidden = false; }
+  const s = st(); s.plays = s.plays || {}; if (!noDe) s.plays[ti] = (s.plays[ti] || 0) + 1; M.saveStore();
+  const rate = parseFloat($(`t${ti}rate`).value) || 1;
+  const fv = voiceFor('f'), mv = voiceFor('m');
+  const sameVoice = !fv || !mv || fv === mv;
+  const parts = [];
+  a.script.forEach(l => (l.text.match(/[^.!?…]+[.!?…]*["“”«»]?/g) || [l.text]).forEach((sent, i, arr) => parts.push({g: l.g || 'f', text: sent.trim(), pause: i === arr.length - 1})));
+  speakingTi = ti; $(`t${ti}play`).disabled = true; $(`t${ti}stop`).hidden = false;
+  $(`t${ti}count`).textContent = noDe ? 'Läuft (zählt nicht) …' : `Durchgang ${s.plays[ti]} von ${a.maxPlays || 2} läuft …`;
+  parts.forEach((p, i) => {
+    const u = new SpeechSynthesisUtterance(p.text);
+    u.lang = 'de-DE';
+    const v = p.g === 'm' ? mv : fv; if (v) u.voice = v;
+    u.rate = rate * 0.95;
+    u.pitch = sameVoice ? (p.g === 'm' ? 0.8 : 1.15) : 1;
+    if (i === parts.length - 1) u.onend = () => { if (speakingTi === ti) { speakingTi = null; $(`t${ti}stop`).hidden = true; $(`t${ti}play`).disabled = false; updateAudioUI(); } };
+    synth.speak(u);
+  });
+}
+
 function renderTask(t, ti){
   const n = ti + 1, own = [];
   let h = (t.section ? `<h2 class="sect">${t.section}</h2>` : '') + `<section class="card" id="aufgabe-${n}"><div class="thead"><span class="task-n">Aufgabe ${n}</span><span class="tscore" id="ts${ti}"></span></div>
     <h2 class="instr">${t.instr}</h2>`;
+  if (t.audio) h += audioHtml(t, ti);
   if (t.type === 'multi' || t.type === 'single') {
     const multi = t.type === 'multi', many = Array.isArray(t.items);
     const items = many ? t.items : [{prompt: t.prompt, options: t.options, correct: t.correct}];
@@ -159,6 +229,11 @@ function renderTask(t, ti){
   return h;
 }
 $('tasks').innerHTML = T.tasks.map(renderTask).join('');
+audioTasks.forEach(ti => {
+  $(`t${ti}play`).onclick = () => playAudio(ti);
+  $(`t${ti}stop`).onclick = () => stopSpeech();
+});
+window.addEventListener('pagehide', () => { if (synth) synth.cancel(); });
 T.tasks.forEach((t, ti) => { if (!t.expl) $('x' + ti).remove(); });
 
 /* ---- Schreiben ---- */
@@ -209,6 +284,7 @@ function evaluate(silent){
   s.history = s.history.filter(h => !(h.test === T.id && h.id === a)).concat({test: T.id, id: a, date: prev ? prev.date : now, C: null, G: null, L: null, total: got, max});
   st().evaluated = true;
   M.saveStore();
+  updateAudioUI();
   const p = got / max;
   $('scoreAll').textContent = `${got} / ${max} Punkte (${Math.round(p * 100)} %)`; $('scoreAll').className = 'score ' + scoreClass(p);
   $('barFill').style.width = Math.round(p * 100) + '%';
@@ -239,7 +315,9 @@ $('resetBtn').onclick = () => {
     if (e.target === scrim || (a && a.dataset.a === 'no')) { scrim.remove(); return; }
     if (!a) return;
     scrim.remove();
+    stopSpeech();
     M.store.tests[T.id] = {attempt: Date.now(), a: {}, evaluated: false, v: T.version || 1};
+    setTimeout(updateAudioUI, 0);
     document.querySelectorAll('#tasks input').forEach(i => { if (i.type === 'text' || !i.type || i.type === 'search') i.value = ''; else i.checked = false; i.classList.remove('ok', 'bad'); });
     document.querySelectorAll('#tasks .gap input').forEach(i => { i.value = ''; i.classList.remove('ok', 'bad'); });
     document.querySelectorAll('#tasks select').forEach(s => { s.value = ''; s.classList.remove('ok', 'bad'); });
@@ -283,5 +361,6 @@ renderClock();
   if (s.evaluated) evaluate(true);
   else if (Object.keys(s.a).length) M.toast('Weiter, wo du aufgehört hast.');
 })();
+updateAudioUI();
 renderHistory();
 })();

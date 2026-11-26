@@ -10,7 +10,8 @@ const TESTS = {
   "3": {title: "Übungstest 3", desc: "C-Test (Online-Shopping, Wohnungssuche, Musik beim Lernen, Wald) · 20 Grammatikaufgaben · Leseverstehen „Hausaufgaben mit KI?“ · Schreiben"},
   "4": {title: "Übungstest 4", desc: "C-Test (Mülltrennung, Buchdruck, Bewegung im Alltag, Haustiere) · 20 Grammatikaufgaben · Leseverstehen „Vier Tage arbeiten, drei Tage frei?“ · Schreiben"},
   "5": {title: "Alte Klausur Mettingen", page: "klausur.html?t=5", desc: "Zwei echte Aufnahmetests aus Mettingen (07.12.2024 + 16.12.2024): Grafik wahr/falsch, Relativpronomen, zwei C-Tests, Sätze verbinden, Passiv, Leseverstehen, Reflexivpronomen, Adjektive · plus Zusatz-Lesetext · 60 Minuten"},
-  "6": {title: "Übungstest 6 (Mettingen-Format)", page: "klausur.html?t=6", desc: "Wie der echte Online-Test: Sätze verbinden, Passiv, Pronomen, Präpositionen, Adjektive, Lückentext mit Auswahl, Umformungen · 2 C-Tests · Grafik & Leseverstehen „Haben Bibliotheken eine Zukunft?“ · Grafik beschreiben · 60 Minuten"}
+  "6": {title: "Übungstest 6 (Mettingen-Format)", page: "klausur.html?t=6", desc: "Wie der echte Online-Test: Sätze verbinden, Passiv, Pronomen, Präpositionen, Adjektive, Lückentext mit Auswahl, Umformungen · 2 C-Tests · Grafik & Leseverstehen „Haben Bibliotheken eine Zukunft?“ · Grafik beschreiben · 60 Minuten"},
+  "7": {title: "Übungstest 7 (mit Hörverstehen)", page: "klausur.html?t=7", desc: "Mettingen-Format plus 🔊 Hörverstehen (Radiointerview + Vortrag, je 2× hören) · Grafik wahr/falsch · Relativpronomen · Sätze verbinden · Passiv · Präpositionen · Adjektive · Leseverstehen · C-Test mit 40 Lücken · 60 Minuten"}
 };
 const PARTS = {C: "C-Test", G: "Grammatik & Satzbau", L: "Leseverstehen", X: "Alte Klausur"};
 
